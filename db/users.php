@@ -1,0 +1,140 @@
+<?php
+
+class users {
+
+    private $id;
+    private $name;
+    private $email;
+    private $loginStatus;
+    private $lastLogin;
+    private $dbConn;
+
+    function getId() {
+        return $this->id;
+    }
+
+    function getName() {
+        return $this->name;
+    }
+
+    function getEmail() {
+        return $this->email;
+    }
+
+    function getLoginStatus() {
+        return $this->loginStatus;
+    }
+
+    function getLastLogin() {
+        return $this->lastLogin;
+    }
+
+    function getDbConn() {
+        return $this->dbConn;
+    }
+
+    function setId($id) {
+        $this->id = $id;
+    }
+
+    function setName($name) {
+        $this->name = $name;
+    }
+
+    function setEmail($email) {
+        $this->email = $email;
+    }
+
+    function setLoginStatus($loginStatus) {
+        $this->loginStatus = $loginStatus;
+    }
+
+    function setLastLogin($lastLogin) {
+        $this->lastLogin = $lastLogin;
+    }
+
+    function setDbConn($dbConn) {
+        $this->dbConn = $dbConn;
+    }
+
+    public function __construct() {
+        require_once 'DbConnect.php';
+        $db = new DbConnect();
+        $this->dbConn = $db->connect();
+    }
+
+    public function save() {
+        $sql = "INSERT INTO users (id,name,email,login_status,last_login) VALUES (null, :name, :email, :loginStatus, :lastLogin)";
+        $stmt = $this->dbConn->prepare($sql);
+        $stmt->bindParam(":name", $this->name);
+        $stmt->bindParam(":email", $this->email);
+        $stmt->bindParam(":loginStatus", $this->loginStatus);
+        $stmt->bindParam(":lastLogin", $this->lastLogin);
+
+        try {
+            if ($stmt->execute()) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception $ex) {
+            echo $ex->getMessage();
+        }
+    }
+
+    public function getUserByEmail() {
+        $stmt = $this->dbConn->prepare('SELECT * FROM users where email=:email');
+        $stmt->bindParam(':email', $this->email);
+        try {
+
+            if ($stmt->execute()) {
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            } else {
+                return false;
+            }
+        } catch (Exception $ex) {
+            echo $ex->getMessage();
+        }
+        return $user;
+    }
+    
+      public function getUserById() {
+        $stmt = $this->dbConn->prepare('SELECT * FROM users where id=:id');
+        $stmt->bindParam(':id', $this->id);
+        try {
+
+            if ($stmt->execute()) {
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            } else {
+                return false;
+            }
+        } catch (Exception $ex) {
+            echo $ex->getMessage();
+        }
+        return $user;
+    }
+
+    public function updateLoginstatus() {
+        $stmt = $this->dbConn->prepare('UPDATE users SET login_status=:loginStatus, last_login=:lastLogin WHERE id=:id_');        
+        $stmt->bindParam(':loginStatus', $this->loginStatus);
+        $stmt->bindParam(':lastLogin', $this->lastLogin);        
+        $stmt->bindParam(':id_', $this->id);
+        try {
+            if ($stmt->execute()) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception $ex) {
+            echo $ex->getMessage();
+        }
+    }
+    
+    public function getAllUsers(){
+        $stmt = $this->dbConn->prepare("SELECT * FROM users");
+        $stmt->execute();
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $users;
+    }
+
+}
